@@ -1,0 +1,67 @@
+---
+title: "mxnet_regression"
+author: "PavanMirla"
+date: '2017-01-18'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Regression with MXNET
+
+MXNET Installation instructions were give [here](https://github.com/pmirla/deeplearning_with_R/blob/master/mxnet_classification.Rmd)
+
+[Reference](https://www.r-bloggers.com/deep-learning-with-mxnetr/)
+
+##Data Preparation
+
+```{r regression}
+library(mxnet)
+library(mlbench)
+
+data(BostonHousing, package="mlbench")
+dim(BostonHousing)
+colnames(BostonHousing)
+?BostonHousing
+
+#DEPENDANT_VARIABLE: medv [column #14]	median value of owner-occupied homes in USD 1000's
+train.ind = seq(1, 506, 3)
+train.x = data.matrix(BostonHousing[train.ind, -14])
+train.y = BostonHousing[train.ind, 14]
+test.x = data.matrix(BostonHousing[-train.ind, -14])
+test.y = BostonHousing[-train.ind, 14]
+
+
+```
+## Symbol system in mxnet
+
+```{r}
+#C++ OBJECTS
+?mx.symbol.Variable
+data <- mx.symbol.Variable("data")
+
+#HIDDEN_LAYER
+?mx.symbol.FullyConnected
+fc1 <- mx.symbol.FullyConnected(data, num_hidden=1)
+
+#OUTPUT_LAYER. Linear Regression 
+lro <- mx.symbol.LinearRegressionOutput(fc1)
+
+mx.set.seed(0)
+model <- mx.model.FeedForward.create(lro, X=train.x, y=train.y,
+                                     ctx=mx.cpu(), num.round=50, array.batch.size=20,
+                                     learning.rate=2e-6, momentum=0.9, eval.metric=mx.metric.rmse)
+
+#PREDICTIONS
+preds = predict(model, test.x)
+
+#DEFINE_MEETRICS: PREDICT_TEST MEAN SQUARE
+
+sqrt(mean((preds-test.y)^2))
+
+
+
+```
+
