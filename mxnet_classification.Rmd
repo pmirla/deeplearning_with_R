@@ -1,0 +1,89 @@
+---
+title: "mxnetR"
+author: "PavanMirla"
+date: '2017-01-17'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## MXNETR package for Deep Learning
+
+This is an R Markdown document with exmaples to implement a classifier using MXNET in R
+
+Useful Links
+
+[Installation](https://github.com/dmlc/mxnet/tree/master/R-package)
+
+[Tutorials](http://mxnet.io/get_started/setup.html#install-the-mxnet-package-for-r)
+
+## Data Preparation
+
+```{r mxnet, message=FALSE}
+require(mlbench)
+require(mxnet) #Installation
+
+data(Sonar, package="mlbench") #?Sonar for dataset details
+dim(Sonar)
+
+#LABEL_INFORMATION
+#The label associated with each record contains the letter "R" if the object is a rock and
+#"M" if it is a mine (metal cylinder)
+
+#TARIN_TEST_DATA_SPLIT
+train.ind <- c(1:50, 100:150)
+
+#CONVERSION_FOR_CONVENIENCE
+#Replace R and M with 1 and 0
+Sonar[,61] = as.numeric(Sonar[,61])-1
+
+#PREPARE_TRAINING_SET
+train.x = data.matrix(Sonar[train.ind, 1:60])
+dim(train.x)
+
+train.y = Sonar[train.ind, 61]
+
+#USE_OF_NEGATIVE_INDEX
+test.x = data.matrix(Sonar[-train.ind, 1:60])
+test.y = Sonar[-train.ind, 61]
+
+
+```
+## Build Multi Layer Neural Net
+
+```{r, message = FALSE}
+mx.set.seed(0)
+
+#CONVENINCE_INTERFACE: for Multiplater perceptron
+?mx.mlp
+
+model <- mx.mlp(train.x,
+       train.y,
+       hidden_node=10,
+       out_node=2,#out_node is 2 for multi class prediction
+       out_activation="softmax",
+       num.round = 20,
+       array.batch.size=15,
+       learning.rate=0.07,
+       momentum=0.9,
+       eval.metric=mx.metric.accuracy
+       )
+#NOTE:  Arguments have a dot seperation in their names
+#NOT_KNOWN: Significance of num.round, eval.metric
+
+
+preds = predict(model, test.x)
+#CONVENIENCE_DISPLAY
+t(preds)
+pred.label = max.col(t(preds))-1
+
+#CROSS_TABULATION OF PREDICTIONS AND TRUE LABELS
+?table
+table(pred.label, test.y)
+
+
+
+```
+
