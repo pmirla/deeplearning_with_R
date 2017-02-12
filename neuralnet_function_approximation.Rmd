@@ -1,0 +1,52 @@
+---
+title: "neuralnet function approximation"
+author: "PavanMirla"
+date: '2017-02-12'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Neural Net to approximate y=x^2
+
+
+
+```{r neuralnet}
+library(neuralnet)
+set.seed(2016)
+attribute <- as.data.frame(sample(seq(-2,2,length = 50), replace = FALSE),ncol = 1)
+response <- attribute^2
+data <- cbind(attribute, response)
+colnames(data) <- c("attribute","response")
+plot(data)
+
+```
+
+## Fit a DNN with two hidden layers each containing three neurons
+
+```{r}
+fit <- neuralnet(response ~ attribute, data = data, hidden = c(3,3), threshold = .01)
+```
+
+## How good the model really is at approximating a function
+
+```{r}
+
+
+test_data <- as.matrix(sample(seq(-2,2,length = 10), replace = FALSE), ncol = 1)
+#predict using the compute function
+
+pred <- compute(fit, test_data)
+
+result <-  cbind(test_data, pred$net.result, test_data^2)
+colnames(result) <- c("Attribute", "Prediction", "Actual")
+plot(result)
+
+# Attribute is Predictor
+
+
+
+```
+
