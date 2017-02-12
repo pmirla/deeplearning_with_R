@@ -1,0 +1,76 @@
+---
+title: "Autoencoder in R"
+author: "PavanMirla"
+date: '2017-02-12'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Autoendoers in R
+Reference: N.D Lewis - Deep Learning
+
+
+
+```{r cars}
+# install.packages('autoencoder')
+# install.packages('ripa')
+library(autoencoder)
+library(ripa)
+
+data(logo)
+image(logo)
+logo
+
+#TRANSPOSE IMAGE and make a COPY using t()
+x_train <- t(logo)
+x_train
+
+
+```
+
+```{r}
+set.seed(2016)
+fit <- autoencode(X.train = x_train, 
+           X.test = NULL,
+           nl = 3,
+           N.hidden = 60,
+           unit.type = "logistic",
+           lambda = 1e-5,
+           beta = 1e-5,
+           rho = .3,
+           epsilon = 0.1,
+           max.iterations = 100,
+           optim.method = c("BFGS"),
+           rel.tol = 0.01,
+           rescale.flag = TRUE,
+           rescaling.offset = 0.001
+           )
+
+# BFGS is Quasi-Newton Method.
+
+attributes((fit))
+
+
+fit$mean.error.test.set
+fit$mean.error.training.set
+
+```
+## predict function to extract features of hidden node
+
+```{r}
+features <- predict(fit, X.input = x_train, hidden.output = TRUE)
+image(t(features$X.output))
+
+```
+##Reconstruct image
+
+```{r}
+pred<- predict(fit, X.input = x_train, hidden.output = FALSE)
+pred$mean.error
+recon <- pred$X.output
+image(t(recon))
+```
+
